@@ -3233,7 +3233,11 @@ local function getLayoutOrder(UI)
         end
     end
 
-    return math.max(unpack(layoutTable)) + 1
+    local max = 0
+for _, v in ipairs(layoutTable) do
+    if v > max then max = v end
+end
+return max + 1
 end
 
 --// Services
@@ -4994,7 +4998,7 @@ function UILibrary.Section:ColorPicker(sett, callback)
                     end
                 end
 
-                local clr3 = Color3.fromRGB(split[1], split[2], split[3])
+                local clr3 = Color3.fromRGB(tonumber(split[1]), tonumber(split[2]), tonumber(split[3]))
 
                 functions.setValue(clr3)
             else
@@ -5539,12 +5543,10 @@ function UILibrary.Section:Dropdown(sett, callback)
 
     return meta
 end
-
-makefolder("OLD WT.GUNS")
-makefolder("OLD WT.GUNS".."/".."configs")
-
 -- Костыли ебейшие, но переделывать я все равно ниче не собираюсь, т.к. не это у меня в планах сейчас
 -- Сейчас конечно у меня скиллуха побольше, но релизовать мне нечего :p
+local UILib = UILibrary -- переменная из склеенного файла 1 выше
+wait()
 -- Дефолт значения для конфига
 function defaultvalue()
 menuOpen = true; optimizationdelay = 0.02; watermarkenabled = true; cursorenabled = true; cursoranimation = true; cursoranimationspeed = 50; cursortransparency = 0; cursorrotation = 0; cursorcolor = Color3.fromRGB(255,255,255); customwatermarkcolor = Color3.fromRGB(160,160,160); customwatermarkshadowcolor = Color3.fromRGB(0,0,0); customwatermarkshadowtransparency = 0.5; backgroundgradientenabled = true; backgroundgradientanimation = false; backgroundgradientanimationspeed = 7; backgroundgradienttransparency = 0.5; backgroundgradientrotation = 0; backgroundgradientcolor1 = Color3.fromRGB(0,0,0); backgroundgradientcolor2 = Color3.fromRGB(255,255,255); screengirlenabled = true; screengirlside = true; screengirl = "Tomoko"; blurenabled = true; blursize = 24; customguicolor = Color3.fromRGB(160,160,160); customshadowcolor = Color3.fromRGB(0,0,0); customguidpi = 80; customshadowtransparency = 0.5;textsize = 0;
