@@ -6,7 +6,13 @@ if game.CoreGui:FindFirstChild("RenHubWatermark") then game.CoreGui.RenHubWaterm
 if game.CoreGui:FindFirstChild("BackgroundScreenGui") then game.CoreGui.BackgroundScreenGui:Destroy() end
 if game.CoreGui:FindFirstChild("RenHubWatermarkCrossLines") then game.CoreGui.RenHubWatermarkCrossLines:Destroy() end
 
-local UILibrary = {}
+local UILib = UILibrary -- переменная из склеенного файла 1 выше
+wait()
+local Window = UILib.new("RenHub", game.Players.LocalPlayer.DisplayName, "RenHub")
+local IO = Window:Category("Info", "http://www.roblox.com/asset/?id=12707252279")
+local OR = Window:Category("Other", "http://www.roblox.com/asset/?id=11932591062")
+-- Дефолт значения для конфига
+function defaultvalue()
 -- Добавь это сразу после local UILibrary = {}
 function UILibrary.new(name, playername, theme)
     local Window = {}
