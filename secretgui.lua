@@ -7,6 +7,33 @@ if game.CoreGui:FindFirstChild("BackgroundScreenGui") then game.CoreGui.Backgrou
 if game.CoreGui:FindFirstChild("RenHubWatermarkCrossLines") then game.CoreGui.RenHubWatermarkCrossLines:Destroy() end
 
 local UILibrary = {}
+-- Добавь это сразу после local UILibrary = {}
+function UILibrary.new(name, playername, theme)
+    local Window = {}
+    
+    function Window:Category(title, icon)
+        local Category = {}
+        
+        function Category:Button(name, icon)
+            local Button = {}
+            
+            function Button:Section(name, side)
+                -- Здесь должна быть твоя логика построения секции
+                return {
+                    Button = function(self, data, func) end,
+                    Toggle = function(self, data, func) end,
+                    Slider = function(self, data, func) end,
+                    ColorPicker = function(self, data, func) end,
+                    Textbox = function(self, data, func) end,
+                    Keybind = function(self, data, func) end
+                }
+            end
+            return Button
+        end
+        return Category
+    end
+    return Window
+end
 --// Modules
 
 local function getObjGen()
