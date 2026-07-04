@@ -5540,7 +5540,4 @@ function UILibrary.Section:Dropdown(sett, callback)
     return meta
 end
 
-makefolder("OLD WT.GUNS")
-makefolder("OLD WT.GUNS".."/".."configs")
 
-return UILibrary
