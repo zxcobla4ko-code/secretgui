@@ -5543,4 +5543,1533 @@ end
 makefolder("OLD WT.GUNS")
 makefolder("OLD WT.GUNS".."/".."configs")
 
+-- Костыли ебейшие, но переделывать я все равно ниче не собираюсь, т.к. не это у меня в планах сейчас
+-- Сейчас конечно у меня скиллуха побольше, но релизовать мне нечего :p
+-- Дефолт значения для конфига
+function defaultvalue()
+menuOpen = true; optimizationdelay = 0.02; watermarkenabled = true; cursorenabled = true; cursoranimation = true; cursoranimationspeed = 50; cursortransparency = 0; cursorrotation = 0; cursorcolor = Color3.fromRGB(255,255,255); customwatermarkcolor = Color3.fromRGB(160,160,160); customwatermarkshadowcolor = Color3.fromRGB(0,0,0); customwatermarkshadowtransparency = 0.5; backgroundgradientenabled = true; backgroundgradientanimation = false; backgroundgradientanimationspeed = 7; backgroundgradienttransparency = 0.5; backgroundgradientrotation = 0; backgroundgradientcolor1 = Color3.fromRGB(0,0,0); backgroundgradientcolor2 = Color3.fromRGB(255,255,255); screengirlenabled = true; screengirlside = true; screengirl = "Tomoko"; blurenabled = true; blursize = 24; customguicolor = Color3.fromRGB(160,160,160); customshadowcolor = Color3.fromRGB(0,0,0); customguidpi = 80; customshadowtransparency = 0.5;textsize = 0;
+end
+defaultvalue()
+
+--Проверка поддержки файлов
+local passes, fails = 0, 0
+
+local function test(name, callback)
+    task.spawn(function()
+        local success, message = pcall(callback)
+
+        if success then
+            passes += 1
+        else
+            fails += 1
+        end
+    end)
+end
+
+if isfolder and makefolder and delfolder then
+    if isfolder(".tests") then
+        delfolder(".tests")
+    end
+    makefolder(".tests")
+end
+
+test("readfile", function()
+    writefile(".tests/readfile.txt", "success")
+    assert(readfile(".tests/readfile.txt") == "success", "Did not return the contents of the file")
+end)
+
+test("makefolder", function()
+    makefolder(".tests/makefolder")
+    assert(isfolder(".tests/makefolder"), "Did not create the folder")
+end)
+
+test("writefile", function()
+    writefile(".tests/writefile.txt", "success")
+    assert(readfile(".tests/writefile.txt") == "success", "Did not write the file")
+end)
+
+test("appendfile", function()
+    writefile(".tests/appendfile.txt", "su")
+    appendfile(".tests/appendfile.txt", "cce")
+    appendfile(".tests/appendfile.txt", "ss")
+    assert(readfile(".tests/appendfile.txt") == "success", "Did not append the file")
+end)
+
+task.wait(1/2)
+
+local path = "RenHub/configs/" .. game.PlaceId .. ".RenHub"
+if fails == 0 then
+    local success, fileContent = pcall(function()
+        return readfile(path)
+    end)
+
+    if success then
+        local loadedFunction, errorMessage = loadstring(fileContent, path)
+        if loadedFunction then
+            loadedFunction()
+            Window:Notification({
+                Title = "RenHub",
+                Desc = "A config for this place has been found and loaded!",
+                expire = 3
+            })
+        else
+            Window:Notification({
+                Title = "RenHub",
+                Desc = "Error while loading config! "..errorMessage,
+                expire = 3
+            })
+        end
+    else
+        Window:Notification({
+            Title = "RenHub",
+            Desc = "There's no config for this place!",
+            expire = 3
+        })
+    end
+else
+    Window:Notification({
+        Title = "RenHub",
+        Desc = "Your executor doesnt support config system!",
+        expire = 3
+    })
+end
+
+-- Инфа всякая, ченджлог, фпс, пинг, вся хуета
+local IOSubButton = IO:Button("Information", "http://www.roblox.com/asset/?id=12707252279")
+local IOSection1 = IOSubButton:Section("GUI was made by Reyn7525", "Left")
+IOSection1:Button({
+    Title = "GUI Library",
+    ButtonName = "Copy Link",
+    Description = "Modified Hydra Hub",
+    }, function()
+    setclipboard("https://raw.githubusercontent.com/Reyn7525/GUI_LIB/refs/heads/main/HydraHub")
+    Window:Notification({
+        Title = "RenHub",
+        Desc = "Library link Copied!",
+        expire = 3
+    })
+end)
+IOSection1:Button({
+    Title = "Discord link",
+    ButtonName = "Copy Link",
+    Description = "Our Discord Server",
+    }, function()
+    setclipboard("https://discord.gg/WVtU62ywa8")
+    Window:Notification({
+        Title = "RenHub",
+        Desc = "Discord link Copied!",
+        expire = 3
+    })
+end)
+local IOSection2 = IOSubButton:Section("Information:", "Left")
+local IOSection3 = IOSubButton:Section("Last Update Changelog:", "Right")
+UpdateInfo = [=[
+    town:
+        Misc:
+            [+] - Added Aimlock
+            [~] - Improved Hitbox Expander
+        Misc:
+            [~] - Improved Custom Time
+    BABFT:
+        Misc:
+            [+] - Added Fly
+            [+] - Added Fly Speed
+            [+] - Added Invisibility
+            [+] - Added Noclip
+    All Games:
+        Other:
+            [~] - Improved Destroy GUI
+]=]
+
+--Создание элементов по типу градиента на фоне, персонажа и т.п.
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local TextButton = Instance.new("TextButton", ScreenGui)
+TextButton.BackgroundTransparency = 1
+TextButton.Size = UDim2.new(0, 0, 0, 0)
+TextButton.Text = " "
+
+local BackgroundScreenGui = Instance.new("ScreenGui", game.CoreGui)
+BackgroundScreenGui.Name = "BackgroundScreenGui"
+BackgroundScreenGui.Enabled = backgroundgradientenabled
+BackgroundScreenGui.DisplayOrder = -1
+local BackgroundLabel = Instance.new("TextLabel", BackgroundScreenGui)
+BackgroundLabel.Name = "BackgroundLabel"
+BackgroundLabel.Size = UDim2.new(1, 0, 1.1, 0)
+BackgroundLabel.Position = UDim2.new(0, 0, -0.1, 0)
+BackgroundLabel.Text = ""
+BackgroundLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+BackgroundLabel.BackgroundTransparency = 0
+local BackgroundGradient = Instance.new("UIGradient", BackgroundLabel)
+BackgroundGradient.Name = "BackgroundGradient"
+BackgroundGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.new(1, 1, 1))
+})
+BackgroundGradient.Rotation = 0
+
+local GirlScreenGui = Instance.new("ScreenGui", game.CoreGui)
+GirlScreenGui.Name = "GirlScreenGui"
+GirlScreenGui.Enabled = screengirlenabled
+GirlScreenGui.DisplayOrder = 0
+local GirlImageLabel = Instance.new("ImageLabel",GirlScreenGui)
+GirlImageLabel.Name = "GirlImageLabel"
+GirlImageLabel.BackgroundTransparency = 1
+GirlImageLabel.Image = "rbxassetid://13391747821"
+GirlImageLabel.Position = UDim2.new(0.775,0,0,0)
+GirlImageLabel.Size = UDim2.new(0.225,0,1,0)
+GirlImageLabel.ZIndex = 0
+
+local Blur = Instance.new("BlurEffect",game.Lighting)
+Blur.Name = "RenHubBlur"
+Blur.Enabled = blurenabled
+
+local CursorGui = Instance.new("ScreenGui", game.CoreGui)
+CursorGui.Name = "CursorGui"
+CursorGui.Enabled = false
+CursorGui.DisplayOrder = 2
+local CursorImage = Instance.new("ImageLabel", CursorGui)
+CursorImage.BackgroundTransparency = 1
+CursorImage.Image = "rbxassetid://13391747821"
+CursorImage.Size = UDim2.new(0,30,0,30)
+
+local RenHubWatermark = Instance.new("ScreenGui")
+local RenHubWatermarkWindow = Instance.new("Frame")
+local MainUI = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local ContentHolder = Instance.new("Frame")
+local UIListLayout = Instance.new("UIListLayout")
+local UICorner_2 = Instance.new("UICorner")
+local _4Line = Instance.new("Frame")
+local _5TextFPS = Instance.new("TextLabel")
+local _6Line = Instance.new("Frame")
+local _8Line = Instance.new("Frame")
+local _7TextPing = Instance.new("TextLabel")
+local _9TextTime = Instance.new("TextLabel")
+local _1Logo = Instance.new("TextLabel")
+local UIGradient = Instance.new("UIGradient")
+local _2Line = Instance.new("Frame")
+local _3TextName = Instance.new("TextLabel")
+local DropShadowHolder = Instance.new("Frame")
+local DropShadow = Instance.new("ImageLabel")
+local ContentFolder = Instance.new("Folder")
+
+RenHubWatermark.Name = "RenHubWatermark"
+RenHubWatermark.Parent = game.CoreGui
+RenHubWatermark.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+RenHubWatermark.Enabled = watermarkenabled
+RenHubWatermark.DisplayOrder = 1
+
+RenHubWatermarkWindow.Name = "RenHubWatermarkWindow"
+RenHubWatermarkWindow.Parent = RenHubWatermark
+RenHubWatermarkWindow.Active = true
+RenHubWatermarkWindow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+RenHubWatermarkWindow.BackgroundTransparency = 1.000
+RenHubWatermarkWindow.BorderColor3 = Color3.fromRGB(255, 255, 255)
+RenHubWatermarkWindow.Draggable = true
+RenHubWatermarkWindow.Position = UDim2.new(0.75, 0, 0, 0)
+RenHubWatermarkWindow.Selectable = true
+RenHubWatermarkWindow.Size = UDim2.new(0, 365, 0, 22)
+
+MainUI.Name = "MainUI"
+MainUI.Parent = RenHubWatermarkWindow
+MainUI.BackgroundColor3 = Color3.fromRGB(27, 27, 27)
+MainUI.BorderColor3 = Color3.fromRGB(255, 255, 255)
+MainUI.BorderSizePixel = 0
+MainUI.Size = UDim2.new(1, 0, 1, 0)
+
+UICorner.CornerRadius = UDim.new(0.349999994, 0)
+UICorner.Parent = MainUI
+
+ContentHolder.Name = "ContentHolder"
+ContentHolder.Parent = MainUI
+ContentHolder.BackgroundColor3 = Color3.fromRGB(27, 27, 27)
+ContentHolder.BorderColor3 = Color3.fromRGB(27, 27, 27)
+ContentHolder.BorderSizePixel = 0
+ContentHolder.Size = UDim2.new(1, 0, 1, 0)
+
+UIListLayout.Parent = ContentHolder
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout.Padding = UDim.new(0, 5)
+
+UICorner_2.CornerRadius = UDim.new(0.349999994, 0)
+UICorner_2.Parent = ContentHolder
+
+_4Line.Name = "4Line"
+_4Line.Parent = ContentHolder
+_4Line.BackgroundColor3 = Color3.fromRGB(74, 74, 74)
+_4Line.BorderSizePixel = 0
+_4Line.Size = UDim2.new(0, 1, 0.6, 0)
+
+_5TextFPS.Name = "5TextFPS"
+_5TextFPS.Parent = ContentHolder
+_5TextFPS.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_5TextFPS.BackgroundTransparency = 1.000
+_5TextFPS.BorderColor3 = Color3.fromRGB(0, 0, 0)
+_5TextFPS.BorderSizePixel = 0
+_5TextFPS.Position = UDim2.new(0.376696825, 0, 0, 0)
+_5TextFPS.Size = UDim2.new(0, 63, 0, 22)
+_5TextFPS.Font = Enum.Font.Gotham
+_5TextFPS.Text = "FPS: 228"
+_5TextFPS.TextColor3 = Color3.fromRGB(160, 160, 160)
+_5TextFPS.TextSize = 14.000
+_5TextFPS.TextWrapped = true
+
+_6Line.Name = "6Line"
+_6Line.Parent = ContentHolder
+_6Line.BackgroundColor3 = Color3.fromRGB(74, 74, 74)
+_6Line.BorderSizePixel = 0
+_6Line.Size = UDim2.new(0, 1, 0.6, 0)
+
+_8Line.Name = "8Line"
+_8Line.Parent = ContentHolder
+_8Line.BackgroundColor3 = Color3.fromRGB(74, 74, 74)
+_8Line.BorderSizePixel = 0
+_8Line.Size = UDim2.new(0, 1, 0.6, 0)
+
+_7TextPing.Name = "7TextPing"
+_7TextPing.Parent = ContentHolder
+_7TextPing.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_7TextPing.BackgroundTransparency = 1.000
+_7TextPing.BorderColor3 = Color3.fromRGB(0, 0, 0)
+_7TextPing.BorderSizePixel = 0
+_7TextPing.Position = UDim2.new(0.564846396, 0, 0, 0)
+_7TextPing.Size = UDim2.new(0, 76, 0, 22)
+_7TextPing.Font = Enum.Font.Gotham
+_7TextPing.Text = "PING: 133.7"
+_7TextPing.TextColor3 = Color3.fromRGB(160, 160, 160)
+_7TextPing.TextSize = 14.000
+_7TextPing.TextWrapped = true
+
+_9TextTime.Name = "9TextTime"
+_9TextTime.Parent = ContentHolder
+_9TextTime.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_9TextTime.BackgroundTransparency = 1.000
+_9TextTime.BorderColor3 = Color3.fromRGB(0, 0, 0)
+_9TextTime.BorderSizePixel = 0
+_9TextTime.Position = UDim2.new(0.846832573, 0, 0, 0)
+_9TextTime.Size = UDim2.new(0, 54, 0, 22)
+_9TextTime.Font = Enum.Font.Gotham
+_9TextTime.Text = "2:28:00"
+_9TextTime.TextColor3 = Color3.fromRGB(160, 160, 160)
+_9TextTime.TextSize = 14.000
+_9TextTime.TextWrapped = true
+
+_1Logo.Name = "1Logo"
+_1Logo.Parent = ContentHolder
+_1Logo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_1Logo.BackgroundTransparency = 1.000
+_1Logo.BorderColor3 = Color3.fromRGB(0, 0, 0)
+_1Logo.BorderSizePixel = 0
+_1Logo.Size = UDim2.new(0, 23, 0, 13)
+_1Logo.Font = Enum.Font.GothamBold
+_1Logo.Text = "R"
+_1Logo.TextColor3 = Color3.fromRGB(160, 160, 160)
+_1Logo.TextSize = 20.000
+_1Logo.TextWrapped = true
+
+UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(163, 163, 163))}
+UIGradient.Rotation = 45
+UIGradient.Parent = _1Logo
+
+_2Line.Name = "2Line"
+_2Line.Parent = ContentHolder
+_2Line.BackgroundColor3 = Color3.fromRGB(74, 74, 74)
+_2Line.BorderSizePixel = 0
+_2Line.Size = UDim2.new(0, 1, 0.6, 0)
+
+_3TextName.Name = "3TextName"
+_3TextName.Parent = ContentHolder
+_3TextName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+_3TextName.BackgroundTransparency = 1.000
+_3TextName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+_3TextName.BorderSizePixel = 0
+_3TextName.Position = UDim2.new(0.750491202, 0, 0, 0)
+_3TextName.Size = UDim2.new(0, 95, 0, 6)
+_3TextName.Font = Enum.Font.Gotham
+_3TextName.Text = "155rbdasnbf14"
+_3TextName.TextColor3 = Color3.fromRGB(160, 160, 160)
+_3TextName.TextSize = 14.000
+_3TextName.TextWrapped = true
+
+DropShadowHolder.Name = "DropShadowHolder"
+DropShadowHolder.Parent = MainUI
+DropShadowHolder.BackgroundTransparency = 1.000
+DropShadowHolder.BorderSizePixel = 0
+DropShadowHolder.Size = UDim2.new(1, 0, 1, 0)
+DropShadowHolder.ZIndex = 0
+
+DropShadow.Name = "DropShadow"
+DropShadow.Parent = DropShadowHolder
+DropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+DropShadow.BackgroundTransparency = 1.000
+DropShadow.BorderSizePixel = 0
+DropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+DropShadow.Size = UDim2.new(1, 18, 1, 18)
+DropShadow.Image = "rbxassetid://6015897843"
+DropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+DropShadow.ImageTransparency = 0.500
+DropShadow.ScaleType = Enum.ScaleType.Slice
+DropShadow.SliceCenter = Rect.new(37, 37, 450, 450)
+
+ContentFolder.Name = "ContentFolder"
+ContentFolder.Parent = MainUI
+
+local RenHubWatermarkCrossLines = Instance.new("ScreenGui")
+local CrossLines = Instance.new("Frame")
+local XLine = Instance.new("Frame")
+local YLine = Instance.new("Frame")
+
+RenHubWatermarkCrossLines.Name = "RenHubWatermarkCrossLines"
+RenHubWatermarkCrossLines.Parent = game.CoreGui
+RenHubWatermarkCrossLines.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+RenHubWatermarkCrossLines.DisplayOrder = 0
+
+CrossLines.Name = "CrossLines"
+CrossLines.Parent = RenHubWatermarkCrossLines
+CrossLines.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+CrossLines.BackgroundTransparency = 1.000
+CrossLines.BorderColor3 = Color3.fromRGB(0, 0, 0)
+CrossLines.BorderSizePixel = 0
+CrossLines.Position = UDim2.new(0, 0, -0.100000001, 0)
+CrossLines.Size = UDim2.new(1, 0, 1.10000002, 0)
+
+XLine.Name = "XLine"
+XLine.Parent = CrossLines
+XLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+XLine.BackgroundTransparency = 1.000
+XLine.BorderColor3 = Color3.fromRGB(0, 0, 0)
+XLine.BorderSizePixel = 0
+XLine.Position = UDim2.new(0, 0, 0.5, 0)
+XLine.Size = UDim2.new(1, 0, 0, 2)
+
+YLine.Name = "YLine"
+YLine.Parent = CrossLines
+YLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+YLine.BackgroundTransparency = 1.000
+YLine.BorderColor3 = Color3.fromRGB(0, 0, 0)
+YLine.BorderSizePixel = 0
+YLine.Position = UDim2.new(0.5, 0, -0.100000001, 0)
+YLine.Size = UDim2.new(0, 2, 1.10000002, 0)
+
+RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["3TextName"].Text = game.Players.LocalPlayer.Name
+
+RenHubWatermark.RenHubWatermarkWindow.Draggable = true
+RenHubWatermark.RenHubWatermarkWindow.Selectable = true
+RenHubWatermark.RenHubWatermarkWindow.Active = true
+
+local ORSubButton = OR:Button("Other Functions", "http://www.roblox.com/asset/?id=11932591062")
+local ORSection1 = ORSubButton:Section("Customize GUI", "Left")
+ORSection1:Keybind({
+    Title = "Open Menu",
+    Description = "Keybind Open/Close GUI",
+    Default = Enum.KeyCode.Insert,
+    }, function(value)
+    if not gameProcessedEvent then
+        menuOpen = not menuOpen
+        game.CoreGui.RenHubGUI.Window.MainUI.Visible = menuOpen
+        if blurenabled == true then
+            Blur.Enabled = not Blur.Enabled
+        end
+        if screengirlenabled == true then
+            GirlScreenGui.Enabled = not GirlScreenGui.Enabled
+        end
+        if backgroundgradientenabled == true then
+            BackgroundScreenGui.Enabled = not BackgroundScreenGui.Enabled
+        end
+    end
+end)
+if type(customguicolor) == "string" then
+    r,g,b = customguicolor:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = customguicolor.r,customguicolor.g,customguicolor.b
+end
+ORSection1:ColorPicker({
+    Title = "GUI Color",
+    Description = "Change your GUI Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    customguicolor = (value)
+end)
+if type(customshadowcolor) == "string" then
+    r,g,b = customshadowcolor:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = customshadowcolor.r,customshadowcolor.g,customshadowcolor.b
+end
+ORSection1:ColorPicker({
+    Title = "Shadow Color",
+    Description = "Change your Shadow Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    customshadowcolor = (value)
+end)
+ORSection1:Slider({
+    Title = "Brightness",
+    Description = "Changes the Shadow",
+    Default = customshadowtransparency*100,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    customshadowtransparency = value/100
+end)
+ORSection1:Slider({
+    Title = "Optimization",
+    Description = "Optimization Level",
+    Default = optimizationdelay*100,
+    Min = 0,
+    Max = 15
+    }, function(value)
+    optimizationdelay = value/100
+end)
+ORSection1:Slider({
+    Title = "DPI Scale",
+    Description = "Changes the GUI Size",
+    Default = customguidpi,
+    Min = 50,
+    Max = 200
+    }, function(value)
+    customguidpi = value
+end)
+ORSection1:Button({
+    Title = "Applying",
+    ButtonName = "Apply",
+    Description = "Apply New GUI Settings",
+    }, function()
+    game.CoreGui.RenHubGUI.Window.MainUI.Size = UDim2.new(0, 8.51*customguidpi, 0, 4.88*customguidpi)
+    RenHubWatermarkWindow.Size = UDim2.new(0, 4.56*customguidpi, 0, 0.27*customguidpi)
+    for _,element in pairs(game.CoreGui.RenHubGUI.Window:GetDescendants()) do
+        if element.ClassName == "TextLabel" or element.ClassName == "TextBox" then
+            if not element:FindFirstChild("OriginalTextSize") then
+                local OriginalTextSize = Instance.new("StringValue")
+                OriginalTextSize.Name = "OriginalTextSize"
+                OriginalTextSize.Value = element.TextSize
+                OriginalTextSize.Parent = element
+                element.TextSize = element.OriginalTextSize.Value/100*customguidpi
+            else
+                element.TextSize = element.OriginalTextSize.Value/100*customguidpi
+            end
+        end
+        if element.ClassName == "Frame" and element.Name == "CheatBase" and element.Parent.Name == "Content" then
+            element.Size = UDim2.new(1,0,0,0.30*customguidpi)
+        end
+    end
+    for _,element in pairs(RenHubWatermarkWindow:GetDescendants()) do
+        if element.ClassName == "TextLabel" then
+            if element.Name ~= "1Logo" then
+                element.TextSize = math.floor(0.175*customguidpi)
+            else
+                element.TextSize = math.floor(0.25*customguidpi)
+            end
+        end
+        if element.Name == "DropShadow" and element.ClassName == "ImageLabel" then
+            element.Size = UDim2.new(1,0.22*customguidpi,1,0.22*customguidpi)
+        end
+    end
+end)
+ORSection1:Button({
+    Title = "Remove GUI",
+    ButtonName = "Destroy",
+    Description = "Delete this GUI",
+    }, function()
+    game.CoreGui.RenHubGUI:Remove()
+    Blur:Remove()
+    ScreenGui:Remove()
+    TextButton:Remove()
+    GirlScreenGui:Remove()
+    BackgroundScreenGui:Remove()
+    RenHubWatermark:Remove()
+    RenHubWatermarkCrossLines:Remove()
+    FOVCircle:Remove()
+    CursorImage:Destroy()
+    CursorGui:Destroy()
+end)
+local ORSection2 = ORSubButton:Section("Watermark", "Left")
+ORSection2:Toggle({
+    Title = "Enable",
+    Description = "Adds a watermark",
+    Default = watermarkenabled
+    }, function(value)
+    watermarkenabled = (value)
+    RenHubWatermark.Enabled = (value)
+    RenHubWatermarkCrossLines.Enabled = (value)
+end)
+if type(customwatermarkcolor) == "string" then
+    r,g,b = customwatermarkcolor:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = customwatermarkcolor.r,customwatermarkcolor.g,customwatermarkcolor.b
+end
+ORSection2:ColorPicker({
+    Title = "GUI Color",
+    Description = "Change your GUI Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    customwatermarkcolor = (value)
+end)
+if type(customwatermarkshadowcolor) == "string" then
+    r,g,b = customwatermarkshadowcolor:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = customwatermarkshadowcolor.r,customwatermarkshadowcolor.g,customwatermarkshadowcolor.b
+end
+ORSection2:ColorPicker({
+    Title = "Shadow Color",
+    Description = "Change your Shadow Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    customwatermarkshadowcolor = (value)
+end)
+ORSection2:Slider({
+    Title = "Brightness",
+    Description = "Changes the Shadow",
+    Default = customwatermarkshadowtransparency*100,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    customwatermarkshadowtransparency = value/100
+end)
+ORSection2:Dropdown({
+    Title = "Elements",
+    Description = "Choose one of them",
+    Options = {
+        ["Solid Style"] = true, 
+        ["Logo"] = true,
+        ["Name"] = true,
+        ["FPS"] = true,
+        ["Ping"] = true,
+        ["Time"] = true
+    },
+    Multi = true,
+    Default = "None",
+}, function(value)
+    if value["Solid Style"] then
+        if value["Logo"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("1Logo") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["1Logo"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["1Logo"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("1Logo") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["1Logo"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["1Logo"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Name"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("3TextName") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["3TextName"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["3TextName"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("3TextName") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["3TextName"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["3TextName"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["FPS"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("5TextFPS") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["5TextFPS"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["5TextFPS"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("5TextFPS") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["5TextFPS"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["5TextFPS"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Ping"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("7TextPing") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["7TextPing"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["7TextPing"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("7TextPing") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["7TextPing"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["7TextPing"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Time"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("9TextTime") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["9TextTime"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["9TextTime"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("9TextTime") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["9TextTime"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["9TextTime"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        for lines = 2,8 do
+            if lines % 2 == 0 then
+                if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild(lines.."Line") then
+                    RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder[lines.."Line"].Visible = false
+                    RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder[lines.."Line"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+                end
+            end
+        end
+        local visibleElements = {}
+        for _, child in pairs(RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:GetChildren()) do
+            local number = child.Name:match("^(%d+)")
+            if number and child.Visible then
+                table.insert(visibleElements, {
+                    number = tonumber(number),
+                    instance = child
+                })
+            end
+        end
+        table.sort(visibleElements, function(a, b) return a.number < b.number end)
+        for i = 1, #visibleElements - 1 do
+            local current = visibleElements[i]
+            local next = visibleElements[i + 1]
+            if current.number % 2 == 1 and next.number % 2 == 1 then
+                local lineNumber = current.number + 1
+                local lineName = lineNumber .. "Line"
+                if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild(lineName) then
+                    local line = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder[lineName]
+                    line.Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+                    line.Visible = true
+                end
+            end
+        end
+    else
+        if value["Logo"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("1Logo") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["1Logo"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["1Logo"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("1Logo") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["1Logo"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["1Logo"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Name"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("3TextName") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["3TextName"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["3TextName"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("3TextName") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["3TextName"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["3TextName"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["FPS"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("5TextFPS") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["5TextFPS"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["5TextFPS"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("5TextFPS") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["5TextFPS"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["5TextFPS"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Ping"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("7TextPing") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["7TextPing"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["7TextPing"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("7TextPing") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["7TextPing"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["7TextPing"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        if value["Time"] == true then
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder:FindFirstChild("9TextTime") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["9TextTime"].Visible = true
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder["9TextTime"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder
+            end
+        else
+            if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("9TextTime") then
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["9TextTime"].Visible = false
+                RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder["9TextTime"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+            end
+        end
+        for lines = 2,8 do
+            if lines % 2 == 0 then
+                if RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild(lines.."Line") then
+                    RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder[lines.."Line"].Visible = false
+                    RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder[lines.."Line"].Parent = RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentFolder
+                end
+            end
+        end
+    end
+end)
+local ORSection3 = ORSubButton:Section("Free Mouse", "Left")
+ORSection3:Keybind({
+    Title = "Free Mouse",
+    Description = "Keybind Free Mouse in First Person",
+    Default = Enum.KeyCode.Home,
+    }, function(value)
+    if IsTyping then 
+        return
+    else
+        TextButton.Modal = not TextButton.Modal
+        if cursorenabled == true then
+            CursorGui.Enabled = TextButton.Modal
+        else
+            CursorGui.Enabled = false
+        end
+        Window:Notification({
+            Title = "RenHub",
+            Desc = "Free Mouse now " .. (TextButton.Modal and "enabled" or "disabled").." !",
+            expire = 3
+        })
+        task.wait()
+    end
+end)
+ORSection3:Toggle({
+    Title = "Cursor",
+    Description = "Adds a Cursor if Free Mouse",
+    Default = cursorenabled
+    }, function(value)
+    cursorenabled = (value)
+end)
+if type(cursorcolor) == "string" then
+    r,g,b = cursorcolor:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = cursorcolor.r,cursorcolor.g,cursorcolor.b
+end
+ORSection3:ColorPicker({
+    Title = "Color",
+    Description = "Change Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    cursorcolor = (value)
+    CursorImage.ImageColor3 = cursorcolor
+end)
+ORSection3:Slider({
+    Title = "Rotation",
+    Description = "Changes the Rotation",
+    Default = cursorrotation,
+    Min = 0,
+    Max = 360
+    }, function(value)
+    cursorrotation = tonumber(math.floor(value))
+end)
+ORSection3:Slider({
+    Title = "Transparency",
+    Description = "Changes the Transparency",
+    Default = cursortransparency*100,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    cursortransparency = tonumber(math.floor(value)/100)
+    CursorImage.ImageTransparency = cursortransparency
+end)
+ORSection3:Toggle({
+    Title = "Animation",
+    Description = "Adds animation on Rotation",
+    Default = cursoranimation
+    }, function(value)
+    cursoranimation = (value)
+end)
+ORSection3:Slider({
+    Title = "Animation Speed",
+    Description = "Changes the Animation",
+    Default = cursoranimationspeed,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    cursoranimationspeed = tonumber(math.floor(value))
+end)
+local ORSection4 = ORSubButton:Section("Background Gradient", "Right")
+ORSection4:Toggle({
+    Title = "Enable",
+    Description = "Adds a gradient if GUI open",
+    Default = backgroundgradientenabled
+    }, function(value)
+    backgroundgradientenabled = (value)
+    BackgroundScreenGui.Enabled = (value)
+end)
+if type(backgroundgradientcolor1) == "string" then
+    r,g,b = backgroundgradientcolor1:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = backgroundgradientcolor1.r,backgroundgradientcolor1.g,backgroundgradientcolor1.b
+end
+ORSection4:ColorPicker({
+    Title = "Color №1",
+    Description = "Change First Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    backgroundgradientcolor1 = (value)
+    BackgroundGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, backgroundgradientcolor1),
+        ColorSequenceKeypoint.new(1, backgroundgradientcolor2)
+    })
+end)
+if type(backgroundgradientcolor2) == "string" then
+    r,g,b = backgroundgradientcolor2:match("([^,]+),([^,]+),([^,]+)")
+else
+    r,g,b = backgroundgradientcolor2.r,backgroundgradientcolor2.g,backgroundgradientcolor2.b
+end
+ORSection4:ColorPicker({
+    Title = "Color №2",
+    Description = "Change Second Color",
+    Default = Color3.new(tonumber(r), tonumber(g), tonumber(b)),
+    }, function(value)
+    backgroundgradientcolor2 = (value)
+    BackgroundGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, backgroundgradientcolor1),
+        ColorSequenceKeypoint.new(1, backgroundgradientcolor2)
+    })
+end)
+ORSection4:Slider({
+    Title = "Rotation",
+    Description = "Changes the Rotation",
+    Default = backgroundgradientrotation,
+    Min = 0,
+    Max = 360
+    }, function(value)
+    backgroundgradientrotation = tonumber(math.floor(value))
+end)
+ORSection4:Slider({
+    Title = "Transparency",
+    Description = "Changes the Transparency",
+    Default = backgroundgradienttransparency*100,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    backgroundgradienttransparency = tonumber(math.floor(value)/100)
+    BackgroundLabel.BackgroundTransparency = backgroundgradienttransparency
+end)
+ORSection4:Toggle({
+    Title = "Animation",
+    Description = "Adds animation on Rotation",
+    Default = backgroundgradientanimation
+    }, function(value)
+    backgroundgradientanimation = (value)
+end)
+ORSection4:Slider({
+    Title = "Animation Speed",
+    Description = "Changes the Animation",
+    Default = backgroundgradientanimationspeed,
+    Min = 0,
+    Max = 100
+    }, function(value)
+    backgroundgradientanimationspeed = tonumber(math.floor(value))
+end)
+local ORSection5 = ORSubButton:Section("Screen Girl", "Right")
+ORSection5:Toggle({
+    Title = "Enable",
+    Description = "Adds a girl if GUI open",
+    Default = screengirlenabled
+    }, function(value)
+    screengirlenabled = (value)
+    GirlScreenGui.Enabled = (value)
+end)
+ORSection5:Toggle({
+    Title = "Girl Side",
+    Description = "Left/Right",
+    Default = screengirlside
+    }, function(value)
+    screengirlside = (value)
+    if screengirl == "Aqua" then
+        GirlImageLabel.Image = "rbxassetid://2788600997"
+        GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.767,0,0.036,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0.036,0)
+        end
+    elseif screengirl == "Darkness" then
+        GirlImageLabel.Image = "rbxassetid://2788599436"
+        GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.767,0,0.039,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0.039,0)
+        end
+    elseif screengirl == "Masaki" then
+        GirlImageLabel.Image = "rbxassetid://14665179030"
+        GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Megumin" then
+        GirlImageLabel.Image = "rbxassetid://7058931760"
+        GirlImageLabel.Size = UDim2.new(0.4,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.6,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Najimi" then
+        GirlImageLabel.Image = "rbxassetid://13641471753"
+        GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Reisen" then
+        GirlImageLabel.Image = "rbxassetid://16306637553"
+        GirlImageLabel.Size = UDim2.new(0.38,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.62,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Ritsuka" then
+        GirlImageLabel.Image = "rbxassetid://15169446403"
+        GirlImageLabel.Size = UDim2.new(0.26,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.74,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Seija" then
+        GirlImageLabel.Image = "rbxassetid://11783500101"
+        GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    elseif screengirl == "Tomoko" then
+        GirlImageLabel.Image = "rbxassetid://14665254386"
+        GirlImageLabel.Size = UDim2.new(0.26,0,1,0)
+        if screengirlside == true then
+            GirlImageLabel.Position = UDim2.new(0.74,0,0,0)
+        else
+            GirlImageLabel.Position = UDim2.new(0,0,0,0)
+        end
+    end
+end)
+ORSection5:Dropdown({
+    Title = "Girl Type",
+    Description = "Choose one of them",
+    Options = {
+        ["Aqua"] = false, 
+        ["Darkness"] = false, 
+        ["Masaki"] = false,
+        ["Megumin"] = false, 
+        ["Najimi"] = false,
+        ["Reisen"] = false,
+        ["Ritsuka"] = false,
+        ["Seija"] = false,
+        ["Tomoko"] = false
+    },
+    Multi = false,
+    Default = screengirl,
+}, function(value)
+    for Type, isSelected in pairs(value) do
+        if isSelected then
+            screengirl = Type
+            if screengirl == "Aqua" then
+                GirlImageLabel.Image = "rbxassetid://2788600997"
+                GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.767,0,0.036,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0.036,0)
+                end
+            elseif screengirl == "Darkness" then
+                GirlImageLabel.Image = "rbxassetid://2788599436"
+                GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.767,0,0.039,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0.039,0)
+                end
+            elseif screengirl == "Masaki" then
+                GirlImageLabel.Image = "rbxassetid://14665179030"
+                GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Megumin" then
+                GirlImageLabel.Image = "rbxassetid://7058931760"
+                GirlImageLabel.Size = UDim2.new(0.4,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.6,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Najimi" then
+                GirlImageLabel.Image = "rbxassetid://13641471753"
+                GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Reisen" then
+                GirlImageLabel.Image = "rbxassetid://16306637553"
+                GirlImageLabel.Size = UDim2.new(0.38,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.62,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Ritsuka" then
+                GirlImageLabel.Image = "rbxassetid://15169446403"
+                GirlImageLabel.Size = UDim2.new(0.26,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.74,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Seija" then
+                GirlImageLabel.Image = "rbxassetid://11783500101"
+                GirlImageLabel.Size = UDim2.new(0.233,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.767,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            elseif screengirl == "Tomoko" then
+                GirlImageLabel.Image = "rbxassetid://14665254386"
+                GirlImageLabel.Size = UDim2.new(0.26,0,1,0)
+                if screengirlside == true then
+                    GirlImageLabel.Position = UDim2.new(0.74,0,0,0)
+                else
+                    GirlImageLabel.Position = UDim2.new(0,0,0,0)
+                end
+            end
+            break
+        end
+    end
+end)
+local ORSection6 = ORSubButton:Section("Blur Effect", "Right")
+ORSection6:Toggle({
+    Title = "Enable",
+    Description = "Blurs everything if GUI open",
+    Default = blurenabled
+    }, function(value)
+    blurenabled = (value)
+    Blur.Enabled = (value)
+end)
+ORSection6:Slider({
+    Title = "Size",
+    Description = "Changes the Blur Size",
+    Default = blursize,
+    Min = 0,
+    Max = 50
+    }, function(value)
+    blursize = tonumber(math.floor(value))
+    Blur.Size = blursize
+end)
+local ORSection7 = ORSubButton:Section("Config", "Right")
+ORSection7:Toggle({
+    Title = "Auto Save",
+    Description = "Automatyically Save Settings",
+    Default = autosaveconfig
+    }, function(value)
+    autosaveconfig = (value)
+end)
+ORSection7:Button({
+    Title = "Saving",
+    ButtonName = "Save",
+    Description = "Manual Save Settings",
+    }, function()
+        makefolder("RenHub")
+        makefolder("RenHub/configs")
+        
+        local part1 = 
+            "customguicolor = Color3.new(" .. customguicolor.R .. ", " .. customguicolor.G .. ", " .. customguicolor.B .. "); " ..
+            "customshadowcolor = Color3.new(" .. customshadowcolor.R .. ", " .. customshadowcolor.G .. ", " .. customshadowcolor.B .. "); " ..
+            "customguidpi = " .. tostring(customguidpi) .. "; " ..
+            "customshadowtransparency = " .. tostring(customshadowtransparency) .. "; " ..
+            "textsize = " .. tostring(textsize) .. "; " ..
+            "norollcoooldown = " .. tostring(norollcoooldown) .. "; " ..
+            "autocollect = " .. tostring(autocollect) .. "; " ..
+            "autosellall = " .. tostring(autosellall) .. "; " ..
+            "chinahatstatus = " .. tostring(chinahatstatus) .. "; " ..
+            "chinahatmeshtransparency = " .. tostring(chinahatmeshtransparency) .. "; " ..
+            "chinahatoutlinetransparencya = " .. tostring(chinahatoutlinetransparencya) .. "; " ..
+            "chinahatfillingtransparencya = " .. tostring(chinahatfillingtransparencya) .. "; " ..
+            "chinahatmeshcolor = Color3.new(" .. chinahatmeshcolor.R .. ", " .. chinahatmeshcolor.G .. ", " .. chinahatmeshcolor.B .. "); " ..
+            "chinahatoutlinecolora = Color3.new(" .. chinahatoutlinecolora.R .. ", " .. chinahatoutlinecolora.G .. ", " .. chinahatoutlinecolora.B .. "); " ..
+            "chinahatfillingcolora = Color3.new(" .. chinahatfillingcolora.R .. ", " .. chinahatfillingcolora.G .. ", " .. chinahatfillingcolora.B .. "); " ..
+            'customtime = "' .. tostring(customtime) .. '"; ' ..
+            "hours = " .. tostring(hours) .. "; " ..
+            "minutes = " .. tostring(minutes) .. "; " ..
+            "changetimestatus = " .. tostring(changetimestatus) .. "; " ..
+            "customfogcolor = Color3.new(" .. customfogcolor.R .. ", " .. customfogcolor.G .. ", " .. customfogcolor.B .. "); " ..
+            "customfogend = " .. tostring(customfogend) .. "; " ..
+            "customfogstart = " .. tostring(customfogstart) .. "; " ..
+            "changefogstatus = " .. tostring(changefogstatus) .. "; " ..
+            "walkspeedmultiplier = " .. tostring(walkspeedmultiplier) .. "; " ..
+            "walkspeedplayer = " .. tostring(walkspeedplayer) .. "; " ..
+            "jumpheightmultiplier = " .. tostring(jumpheightmultiplier) .. "; " ..
+            "jumpheightplayer = " .. tostring(jumpheightplayer) .. ";"
+
+        local part2 = 
+            "watermarkenabled = " .. tostring(watermarkenabled) .. "; " ..
+            "optimizationdelay = " .. tostring(optimizationdelay) .. "; " ..
+            "cursorenabled = " .. tostring(cursorenabled) .. "; " ..
+            "cursoranimation = " .. tostring(cursoranimation) .. "; " ..
+            "cursoranimationspeed = " .. tostring(cursoranimationspeed) .. "; " ..
+            "cursortransparency = " .. tostring(cursortransparency) .. "; " ..
+            "cursorrotation = " .. tostring(cursorrotation) .. "; " ..
+            "cursorcolor = Color3.new(" .. cursorcolor.R .. ", " .. cursorcolor.G .. ", " .. cursorcolor.B .. "); " ..
+            "backgroundgradientanimation = " .. tostring(backgroundgradientanimation) .. "; " ..
+            "backgroundgradientanimationspeed = " .. tostring(backgroundgradientanimationspeed) .. "; " ..
+            'customwatermarkcolor = Color3.new(' .. customwatermarkcolor.R .. ', ' .. customwatermarkcolor.G .. ', ' .. customwatermarkcolor.B .. '); ' ..
+            'customwatermarkshadowcolor = Color3.new(' .. customwatermarkshadowcolor.R .. ', ' .. customwatermarkshadowcolor.G .. ', ' .. customwatermarkshadowcolor.B .. '); ' ..
+            "customwatermarkshadowtransparency = " .. tostring(customwatermarkshadowtransparency) .. "; " ..
+            "backgroundgradientenabled = " .. tostring(backgroundgradientenabled) .. "; " ..
+            "backgroundgradienttransparency = " .. tostring(backgroundgradienttransparency) .. "; " ..
+            "backgroundgradientrotation = " .. tostring(backgroundgradientrotation) .. "; " ..
+            "backgroundgradientanimation = " .. tostring(backgroundgradientanimation) .. "; " ..
+            "backgroundgradientanimationspeed = " .. tostring(backgroundgradientanimationspeed) .. "; " ..
+            "backgroundgradientcolor1 = " .. "Color3.new(" .. backgroundgradientcolor1.R .. ", " .. backgroundgradientcolor1.G .. ", " .. backgroundgradientcolor1.B .. "); " ..
+            "backgroundgradientcolor2 = " .. "Color3.new(" .. backgroundgradientcolor2.R .. ", " .. backgroundgradientcolor2.G .. ", " .. backgroundgradientcolor2.B .. "); " ..
+            "screengirlenabled = " .. tostring(screengirlenabled) .. "; " ..
+            "screengirlside = " .. tostring(screengirlside) .. "; " ..
+            'screengirl = ' .. '"' .. tostring(screengirl) .. '"' .. "; " ..
+            "blurenabled = " .. tostring(blurenabled) .. "; " ..
+            "blursize = " .. tostring(blursize) .. "; "
+
+        writefile("RenHub/configs/" .. game.PlaceId .. ".RenHub", part1)
+        appendfile("RenHub/configs/" .. game.PlaceId .. ".RenHub", part2)
+    Window:Notification({
+        Title = "RenHub",
+        Desc = "Config for this place was succesfully saved!",
+        expire = 3
+    }) 
+end)
+ORSection7:Button({
+    Title = "Deleting",
+    ButtonName = "Delete",
+    Description = "Manual Delete Settings",
+    }, function()
+    if path then
+        delfile("RenHub/configs/" .. game.PlaceId .. ".RenHub")
+        Window:Notification({
+            Title = "RenHub",
+            Desc = "Config for this place was succesfully deleted!",
+            expire = 3
+        })   
+    else
+        Window:Notification({
+            Title = "RenHub",
+            Desc = "There's no config for this place!",
+            expire = 3
+        }) 
+    end
+end)
+local ORSection8 = ORSubButton:Section("Loaders", "Right")
+ORSection8:Button({
+    Title = "Infinite Yield",
+    ButtonName = "Load",
+    Description = "",
+    }, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source", true))()
+end)
+
+print(" ██▀███  ▓█████▓██   ██▓ ███▄    █ ")
+print("▓██ ▒ ██▒▓█   ▀ ▒██  ██▒ ██ ▀█   █ ")
+print("▓██ ░▄█ ▒▒███    ▒██ ██░▓██  ▀█ ██▒")
+print("▒██▀▀█▄  ▒▓█  ▄  ░ ▐██▓░▓██▒  ▐▌██▒")
+print("░██▓ ▒██▒░▒████▒ ░ ██▒▓░▒██░   ▓██░")
+print("░ ▒▓ ░▒▓░░░ ▒░ ░  ██▒▒▒ ░ ▒░   ▒ ▒ ")
+print("  ░▒ ░ ▒░ ░ ░  ░▓██ ░▒░ ░ ░░   ░ ▒░")
+print("  ░░   ░    ░   ▒ ▒ ░░     ░   ░ ░ ")
+print("   ░        ░  ░░ ░              ░ ")
+
+-- это фикс дропдаунов т.к. в ориге это кусок говна ебучего
+local canvasfix = 0
+for _,Dropdown in pairs(game.CoreGui.RenHubGUI.Window.MainUI.Content:GetDescendants()) do
+    if Dropdown.Name == "Dropdown" and Dropdown.ClassName == "Frame" then
+        count = 0
+        for _,child in ipairs(Dropdown.OptionHolder.ContentHolder.Content:GetChildren()) do
+            if child:IsA("ImageButton") then
+                count = count + 1
+            end
+        end
+        Dropdown.OptionHolder.ContentHolder.Content.CanvasSize = UDim2.new(1, 0, 1+(count*0.01515), 0)
+    end
+end
+
+-- создание в информации пинга, фпс и времени
+local FPSOfDevice = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.SectionTitle:Clone()
+FPSOfDevice.Parent = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.Content
+FPSOfDevice.Name = "FPSOfDevice"
+FPSOfDevice.Text = "FPS: 0"
+
+local PingOfDevice = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.SectionTitle:Clone()
+PingOfDevice.Parent = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.Content
+PingOfDevice.Name = "PingOfDevice"
+PingOfDevice.Text = "Ping: 0"
+
+local TimeOfDevice = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.SectionTitle:Clone()
+TimeOfDevice.Parent = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.Content
+TimeOfDevice.Name = "TimeOfDevice"
+TimeOfDevice.Text = "Current Time: 0:00"
+
+for line in string.gmatch(UpdateInfo, "[^\r\n]+") do
+    local TextUpdateLog = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Right["Last Update Changelog:"].Border.SectionTitle:Clone()
+    TextUpdateLog.Parent = game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Right["Last Update Changelog:"].Border.Content
+    TextUpdateLog.Text = line
+end
+
+-- это фикс DPI если он изначально был другим
+game.CoreGui.RenHubGUI.Window.MainUI.Size = UDim2.new(0, 8.51*customguidpi, 0, 4.88*customguidpi)
+RenHubWatermarkWindow.Size = UDim2.new(0, 4.56*customguidpi, 0, 0.27*customguidpi)
+for _,element in pairs(game.CoreGui.RenHubGUI.Window:GetDescendants()) do
+    if element.ClassName == "TextLabel" or element.ClassName == "TextBox" then
+        if not element:FindFirstChild("OriginalTextSize") then
+            local OriginalTextSize = Instance.new("StringValue")
+            OriginalTextSize.Name = "OriginalTextSize"
+            OriginalTextSize.Value = element.TextSize
+            OriginalTextSize.Parent = element
+            element.TextSize = element.OriginalTextSize.Value/100*customguidpi
+        else
+            element.TextSize = element.OriginalTextSize.Value/100*customguidpi
+        end
+    end
+    if element.ClassName == "Frame" and element.Name == "CheatBase" and element.Parent.Name == "Content" then
+        element.Size = UDim2.new(1,0,0,0.30*customguidpi)
+    end
+end
+for _,element in pairs(RenHubWatermarkWindow:GetDescendants()) do
+    if element.ClassName == "TextLabel" then
+        if element.Name ~= "1Logo" then
+            element.TextSize = math.floor(0.175*customguidpi)
+        else
+            element.TextSize = math.floor(0.25*customguidpi)
+        end
+    end
+    if element.Name == "DropShadow" and element.ClassName == "ImageLabel" then
+        element.Size = UDim2.new(1,0.22*customguidpi,1,0.22*customguidpi)
+    end
+end
+
+-- эта хуйня удаляет кнопки кфг если он не саппортится
+if fails ~= 0 then
+    for _,cfgsys in pairs(game.CoreGui.RenHubGUI.Window.MainUI.Content:GetDescendants()) do
+        if cfgsys.Name == "Config" and cfgsys:IsA("Frame") then
+            cfgsys:Remove()
+            warn("RenHub | WARNING! Executor doesn't support config system!")
+        end
+    end
+end
+
+-- autosize до того как он появился оффициально в роблоксе
+for _, child in ipairs(ContentHolder:GetChildren()) do
+    if child:IsA("TextLabel") then
+        child:GetPropertyChangedSignal("Text"):Connect(function()
+            local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+            child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+        end)
+        child:GetPropertyChangedSignal("TextSize"):Connect(function()
+            local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+            child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+        end)
+        local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+        child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+    end
+end
+ContentHolder.ChildAdded:Connect(function(child)
+    if child:IsA("TextLabel") then
+        child:GetPropertyChangedSignal("Text"):Connect(function()
+            local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+            child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+        end)
+        child:GetPropertyChangedSignal("TextSize"):Connect(function()
+            local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+            child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+        end)
+        local textSize = game:GetService("TextService"):GetTextSize(child.Text, child.TextSize, child.Font, Vector2.new(10000, 10000))
+        child.Size = UDim2.new(0, textSize.X + 10, child.Size.Y.Scale, child.Size.Y.Offset)
+    end
+end)
+
+local isHolding = false
+
+-- Регулировочные линии
+RenHubWatermarkWindow.MouseEnter:Connect(function()
+    if game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+        isHolding = true
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 0.95}
+        ):Play()
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines.XLine,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 0}
+        ):Play()
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines.YLine,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 0}
+        ):Play()
+    end
+end)
+
+RenHubWatermarkWindow.MouseLeave:Connect(function()
+    if isHolding then
+        isHolding = false
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 1}
+        ):Play()
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines.XLine,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 1}
+        ):Play()
+        game:GetService("TweenService"):Create(
+            RenHubWatermarkCrossLines.CrossLines.YLine,
+            TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+            {Transparency = 1}
+        ):Play()
+    end
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if RenHubWatermark and RenHubWatermark:FindFirstChild("RenHubWatermarkWindow") then
+            local mouse = game.Players.LocalPlayer:GetMouse()
+            local window = RenHubWatermark.RenHubWatermarkWindow
+            local mousePosition = Vector2.new(mouse.X, mouse.Y)
+            local windowPosition = window.AbsolutePosition
+            local windowSize = window.AbsoluteSize
+
+            if mousePosition.X >= windowPosition.X and mousePosition.X <= windowPosition.X + windowSize.X and
+                mousePosition.Y >= windowPosition.Y and mousePosition.Y <= windowPosition.Y + windowSize.Y then
+                isHolding = true
+                game:GetService("TweenService"):Create(
+                    RenHubWatermarkCrossLines.CrossLines,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {Transparency = 0.9}
+                ):Play()
+                game:GetService("TweenService"):Create(
+                    RenHubWatermarkCrossLines.CrossLines.XLine,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {Transparency = 0}
+                ):Play()
+                game:GetService("TweenService"):Create(
+                    RenHubWatermarkCrossLines.CrossLines.YLine,
+                    TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                    {Transparency = 0}
+                ):Play()
+            end
+        end
+    end
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if isHolding then
+            isHolding = false
+            game:GetService("TweenService"):Create(
+                RenHubWatermarkCrossLines.CrossLines,
+                TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                {Transparency = 1}
+            ):Play()
+            game:GetService("TweenService"):Create(
+                RenHubWatermarkCrossLines.CrossLines.XLine,
+                TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                {Transparency = 1}
+            ):Play()
+            game:GetService("TweenService"):Create(
+                RenHubWatermarkCrossLines.CrossLines.YLine,
+                TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                {Transparency = 1}
+            ):Play()
+        end
+    end
+end)
+
+game.CoreGui.RenHubGUI.DisplayOrder = 1
+
+-- Обновление ватермарки и всего вот этого говна
+local lastWidth = RenHubWatermark.RenHubWatermarkWindow.AbsoluteSize.X
+local lastUpdate = 0
+local connection
+connection = game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+    if CursorImage then
+        CursorImage.Position = UDim2.new(0,game:GetService("UserInputService"):GetMouseLocation().X-14,0,game:GetService("UserInputService"):GetMouseLocation().Y-73)
+    end
+    if walkspeedmultiplier == true then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkspeedplayer
+    end
+    if jumpheightmultiplier == true then
+        game.Players.LocalPlayer.Character.Humanoid.JumpHeight = jumpheightplayer
+    end
+    lastUpdate = lastUpdate + deltaTime
+    if lastUpdate >= optimizationdelay then
+        lastUpdate = 0
+        if game.CoreGui:FindFirstChild("RenHubGUI") then
+            game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.Content.PingOfDevice.Text = "Ping: " .. math.floor(tonumber(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()))
+            game.CoreGui.RenHubGUI.Window.MainUI.Content.Information.Left["Information:"].Border.Content.TimeOfDevice.Text = "Current Time: " .. os.date("%X")
+            game.CoreGui.RenHubGUI.Window.MainUI.DropShadowHolder.DropShadow.ImageTransparency = 1-customshadowtransparency
+            game.CoreGui.RenHubGUI.Window.MainUI.DropShadowHolder.DropShadow.ImageColor3 = customshadowcolor
+            DropShadow.ImageTransparency = 1-customwatermarkshadowtransparency
+            DropShadow.ImageColor3 = customwatermarkshadowcolor
+            for _,element in pairs(game.CoreGui.RenHubGUI:GetDescendants()) do
+                if element.Name == "Logo" and element.ClassName == "ImageLabel" then
+                    element.ImageColor3 = customguicolor
+                end
+                if element.Name == "Image" and element.ClassName == "ImageLabel" then
+                    element.ImageColor3 = customguicolor
+                end
+            end
+            for _,wmelement in pairs(ContentHolder:GetDescendants()) do
+                if wmelement.ClassName == "TextLabel" then
+                    wmelement.TextColor3 = customwatermarkcolor
+                end
+                if wmelement.ClassName == "Frame" then
+                    wmelement.BackgroundColor3 = customwatermarkcolor
+                end
+            end
+        else
+            defaultvalue(); connection:Disconnect()
+        end
+        if RenHubWatermark then
+            local totalWidth = 0
+            for _, child in ipairs(RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:GetChildren()) do
+                if child:IsA("GuiObject") and child ~= game.CoreGui.RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("UIListLayout") then
+                    totalWidth = totalWidth + child.Size.X.Offset + game.CoreGui.RenHubWatermark.RenHubWatermarkWindow.MainUI.ContentHolder:FindFirstChild("UIListLayout").Padding.Offset
+                end
+            end
+
+            local newWidth = totalWidth + 5
+            RenHubWatermark.RenHubWatermarkWindow.Size = UDim2.new(0, newWidth, RenHubWatermark.RenHubWatermarkWindow.Size.Y.Scale, RenHubWatermark.RenHubWatermarkWindow.Size.Y.Offset)
+
+            local widthDifference = newWidth - lastWidth
+
+            local windowCenterX = RenHubWatermark.RenHubWatermarkWindow.AbsolutePosition.X + RenHubWatermark.RenHubWatermarkWindow.AbsoluteSize.X / 2
+            local screenCenterX = workspace.CurrentCamera.ViewportSize.X / 2
+
+            if math.abs(windowCenterX - screenCenterX) <= 10 then
+                RenHubWatermark.RenHubWatermarkWindow.Position = UDim2.new(
+                    0.5, -newWidth / 2,
+                    RenHubWatermark.RenHubWatermarkWindow.Position.Y.Scale,
+                    RenHubWatermark.RenHubWatermarkWindow.Position.Y.Offset
+                )
+            else
+                if windowCenterX > screenCenterX then
+                    RenHubWatermark.RenHubWatermarkWindow.Position = UDim2.new(
+                        RenHubWatermark.RenHubWatermarkWindow.Position.X.Scale,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.X.Offset - widthDifference,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.Y.Scale,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.Y.Offset
+                    )
+                else
+                    RenHubWatermark.RenHubWatermarkWindow.Position = UDim2.new(
+                        RenHubWatermark.RenHubWatermarkWindow.Position.X.Scale,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.X.Offset,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.Y.Scale,
+                        RenHubWatermark.RenHubWatermarkWindow.Position.Y.Offset
+                    )
+                end
+            end
+            lastWidth = newWidth
+            _7TextPing.Text = "Ping: " .. math.floor(tonumber(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()))
+            _9TextTime.Text = os.date("%X")
+        end
+    end
+end)
+
 return UILibrary
