@@ -1395,7 +1395,7 @@ local function getObjGen()
             Gui.Logo.LayoutOrder = -5
             Gui.Logo.Size = UDim2.new(1, 0, 0.100000001, 0)
             Gui.Logo.ZIndex = 122
-            Gui.Logo.Image = "rbxassetid://91263405733465"
+            Gui.Logo.Image = "rbxassetid://71066028869787"
             Gui.Logo.ImageColor3 = Color3.fromRGB(160, 160, 160)
             Gui.Logo.ScaleType = Enum.ScaleType.Fit
 
