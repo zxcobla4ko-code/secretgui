@@ -755,7 +755,7 @@ local function getObjGen()
             Gui.Drag.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             Gui.Drag.BorderSizePixel = 0
             Gui.Drag.LayoutOrder = -1
-            Gui.Drag.Size = UDim2.new(0.75, 0, 0.200000003, 0)
+            Gui.Drag.Size = UDim2.new(0.6, 0, 0.200000003, 0)
             Gui.Drag.ZIndex = 110
 
             Gui.UICorner_11.CornerRadius = UDim.new(1, 0)
@@ -790,7 +790,7 @@ local function getObjGen()
             Gui.KeyInput.Parent = Gui.Slider
             Gui.KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
             Gui.KeyInput.BorderSizePixel = 0
-            Gui.KeyInput.Size = UDim2.new(0.4, 0, 0.699999988, 0)
+            Gui.KeyInput.Size = UDim2.new(0.35, 0, 0.699999988, 0)
             Gui.KeyInput.ZIndex = 110
 
             Gui.UICorner_13.CornerRadius = UDim.new(0.100000001, 0)
