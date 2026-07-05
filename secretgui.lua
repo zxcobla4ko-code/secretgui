@@ -2208,8 +2208,8 @@ local function getObjGen()
             Gui.Desc.AnchorPoint = Vector2.new(0.5, 0)
             Gui.Desc.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             Gui.Desc.BackgroundTransparency = 1.000
-            Gui.Desc.Position = UDim2.new(0.75, 0, 1.12, 0)
-            Gui.Desc.Size = UDim2.new(1.5, 0, 0.5, 0)
+            Gui.Desc.Position = UDim2.new(0.5, 0, 1.12, 0)
+            Gui.Desc.Size = UDim2.new(1, 0, 0.5, 0)
             Gui.Desc.Visible = false
             Gui.Desc.ZIndex = 111
             Gui.Desc.Font = Enum.Font.Gotham
